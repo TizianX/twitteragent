@@ -12,13 +12,6 @@
 ./scripts/install-and-run.ps1
 ```
 
-This command installs dependencies (first run), builds the desktop app, and starts it.
-
-## Dev mode
-```bash
-npm run dev
-```
-
 ## Installer packages
 ```bash
 npm run package
