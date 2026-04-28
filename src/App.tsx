@@ -9,7 +9,6 @@ const fallback: AgentSnapshot = {
   personalityState: 'idle',
   voiceLoaded: false,
   voiceStrength: 0,
-  extensionConnected: false,
   lastTweets: [],
   logs: ['system initialized'],
   automation: {
@@ -39,8 +38,6 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 export default function App() {
   const [state, setState] = useState<AgentSnapshot>(fallback);
   const [apiKey, setApiKey] = useState('');
-  const [sampleTweet, setSampleTweet] = useState('this is a test tweet about product updates');
-  const [sampleReply, setSampleReply] = useState('');
 
   useEffect(() => {
     window.desktopApi.getState().then(setState);
@@ -56,9 +53,6 @@ export default function App() {
 
   return (
     <main className="min-h-screen bg-[#060812] p-6 font-mono text-slate-100">
-      <div className="mx-auto mb-4 max-w-7xl rounded-xl border border-cyan-300/20 bg-black/40 p-3 text-xs text-cyan-100">
-        setup flow: (1) save gemini key → (2) upload voice files → (3) launch chrome with extension → (4) click start agent.
-      </div>
       <div className="mx-auto grid max-w-7xl gap-4 lg:grid-cols-3">
         <Panel title="dashboard">
           <div className="space-y-2 text-sm">
@@ -66,9 +60,6 @@ export default function App() {
             <p>replies sent: {state.repliesSent}</p>
             <p>personality: {state.personalityState}</p>
             <p>voice strength: {(state.voiceStrength * 100).toFixed(0)}%</p>
-            <p className={state.extensionConnected ? 'text-emerald-400' : 'text-amber-300'}>
-              extension: {state.extensionConnected ? 'connected' : 'disconnected'}
-            </p>
           </div>
           <div className="mt-4 flex gap-2">
             <button className="rounded bg-cyan-500 px-3 py-2 text-black" onClick={() => window.desktopApi.startAgent()}>Start Agent</button>
@@ -119,23 +110,8 @@ export default function App() {
           <button className="rounded bg-cyan-700 px-3 py-2" onClick={() => window.desktopApi.launchChromeWithExtension()}>Launch Chrome with Extension</button>
           <button className="ml-2 rounded bg-slate-700 px-3 py-2" onClick={() => window.desktopApi.openExtensionGuide()}>Open Extension Folder</button>
           <div className="mt-3 text-xs text-slate-300">
-            <p>Bridge endpoint: ws://127.0.0.1:3031</p>
-            <p>Chrome is launched with an isolated profile where the extension is auto-loaded.</p>
+            <p>The app runs websocket bridge on ws://127.0.0.1:3031</p>
           </div>
-        </Panel>
-
-        <Panel title="test reply sandbox">
-          <textarea className="h-24 w-full rounded bg-black/40 p-2 text-xs" value={sampleTweet} onChange={(e) => setSampleTweet(e.target.value)} />
-          <button
-            className="mt-2 rounded bg-emerald-500 px-3 py-2 text-black"
-            onClick={async () => {
-              const reply = await window.desktopApi.testReply(sampleTweet);
-              setSampleReply(reply);
-            }}
-          >
-            Generate Test Reply
-          </button>
-          <p className="mt-2 text-xs text-emerald-300">{sampleReply}</p>
         </Panel>
 
         <Panel title="live console">

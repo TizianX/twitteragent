@@ -22,7 +22,6 @@ export interface AgentSnapshot {
   personalityState: string;
   voiceLoaded: boolean;
   voiceStrength: number;
-  extensionConnected: boolean;
   lastTweets: string[];
   logs: string[];
   automation: AutomationSettings;

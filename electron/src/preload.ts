@@ -12,7 +12,6 @@ contextBridge.exposeInMainWorld('desktopApi', {
   uploadVoiceFiles: () => ipcRenderer.invoke('voice:upload'),
   startAgent: () => ipcRenderer.invoke('agent:start'),
   stopAgent: () => ipcRenderer.invoke('agent:stop'),
-  testReply: (tweet: string) => ipcRenderer.invoke('agent:testReply', tweet),
   openExtensionGuide: () => ipcRenderer.invoke('extension:open'),
   launchChromeWithExtension: () => ipcRenderer.invoke('extension:launchChrome'),
 });

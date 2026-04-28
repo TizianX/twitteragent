@@ -12,7 +12,6 @@ declare global {
       uploadVoiceFiles: () => Promise<string[]>;
       startAgent: () => Promise<void>;
       stopAgent: () => Promise<void>;
-      testReply: (tweet: string) => Promise<string>;
       openExtensionGuide: () => Promise<void>;
       launchChromeWithExtension: () => Promise<void>;
     };

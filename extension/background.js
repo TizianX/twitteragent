@@ -6,7 +6,6 @@ function connect() {
   port = new WebSocket('ws://127.0.0.1:3031');
 
   port.onopen = () => {
-    send({ type: 'heartbeat', source: 'background_open' });
     while (queue.length) {
       port.send(queue.shift());
     }
@@ -42,7 +41,5 @@ function send(data) {
 chrome.runtime.onMessage.addListener((msg) => {
   send(msg);
 });
-
-setInterval(() => send({ type: 'heartbeat', source: 'background_interval' }), 15000);
 
 connect();

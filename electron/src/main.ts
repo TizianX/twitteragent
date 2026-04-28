@@ -1,33 +1,12 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
-import { spawn } from 'child_process';
 import { AgentRuntime } from './runtime';
 
 let mainWindow: BrowserWindow | null = null;
 let runtime: AgentRuntime;
 
 const isDev = process.env.NODE_ENV === 'development';
-
-function getExtensionPath() {
-  return isDev
-    ? path.join(process.cwd(), 'extension')
-    : path.join(process.resourcesPath, 'app.asar.unpacked', 'extension');
-}
-
-function getChromeBinary(): string | null {
-  if (process.platform === 'darwin') return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-  if (process.platform === 'win32') {
-    const candidates = [
-      process.env['PROGRAMFILES'] ? path.join(process.env['PROGRAMFILES'], 'Google/Chrome/Application/chrome.exe') : '',
-      process.env['PROGRAMFILES(X86)'] ? path.join(process.env['PROGRAMFILES(X86)'], 'Google/Chrome/Application/chrome.exe') : '',
-      process.env['LOCALAPPDATA'] ? path.join(process.env['LOCALAPPDATA'], 'Google/Chrome/Application/chrome.exe') : '',
-    ].filter(Boolean);
-    return candidates.find((p) => fs.existsSync(p)) ?? null;
-  }
-  const linuxCandidates = ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium-browser', '/usr/bin/chromium'];
-  return linuxCandidates.find((p) => fs.existsSync(p)) ?? null;
-}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -64,8 +43,6 @@ app.whenReady().then(() => {
   ipcMain.handle('settings:ai', async (_e, data) => runtime.updateAi(data));
   ipcMain.handle('agent:start', async () => runtime.start());
   ipcMain.handle('agent:stop', async () => runtime.stop());
-  ipcMain.handle('agent:testReply', async (_e, tweet: string) => runtime.testReply(tweet));
-
   ipcMain.handle('voice:upload', async () => {
     const response = await dialog.showOpenDialog({
       title: 'Select brand voice files',
@@ -84,36 +61,23 @@ app.whenReady().then(() => {
     runtime.reloadVoice();
     return copied;
   });
-
   ipcMain.handle('extension:open', async () => {
-    await shell.openPath(getExtensionPath());
+    const extensionPath = isDev
+      ? path.join(process.cwd(), 'extension')
+      : path.join(process.resourcesPath, 'app.asar.unpacked', 'extension');
+    await shell.openPath(extensionPath);
   });
-
   ipcMain.handle('extension:launchChrome', async () => {
-    const extensionPath = getExtensionPath();
-    const chrome = getChromeBinary();
-    if (!chrome) {
-      await runtime.log('chrome binary not found; opening x.com fallback');
+    const extensionPath = isDev
+      ? path.join(process.cwd(), 'extension')
+      : path.join(process.resourcesPath, 'app.asar.unpacked', 'extension');
+    const url = `googlechrome --load-extension=\"${extensionPath}\" https://x.com/home`;
+    await runtime.log(`launch command: ${url}`);
+    if (process.platform === 'darwin') {
+      await shell.openExternal(`file:///Applications/Google%20Chrome.app`);
+    } else {
       await shell.openExternal('https://x.com/home');
-      return { ok: false, reason: 'chrome_not_found' };
     }
-
-    const userDataDir = path.join(app.getPath('userData'), 'chrome-profile');
-    fs.mkdirSync(userDataDir, { recursive: true });
-    const args = [
-      `--load-extension=${extensionPath}`,
-      `--disable-extensions-except=${extensionPath}`,
-      `--user-data-dir=${userDataDir}`,
-      'https://x.com/home',
-    ];
-
-    spawn(chrome, args, {
-      detached: true,
-      stdio: 'ignore',
-    }).unref();
-
-    await runtime.log(`launched chrome with extension at ${extensionPath}`);
-    return { ok: true };
   });
 
   app.on('activate', () => {

@@ -10,25 +10,11 @@ function toTweetId(article) {
 function extractTweet(article) {
   const tweetId = toTweetId(article);
   if (!tweetId || seen.has(tweetId)) return null;
-  const textNode = article.querySelector('[data-testid="tweetText"]');
-  const text = (textNode?.innerText || article.innerText).slice(0, 1000);
-  const handleNode = article.querySelector('a[role="link"][href^="/"]');
-  const author = handleNode?.getAttribute('href')?.replace('/', '') || 'unknown';
+  const text = article.innerText.slice(0, 1000);
+  const author = article.querySelector('a[role="link"][href^="/"] span')?.textContent?.replace('@', '') || 'unknown';
   const isMention = text.includes('@');
   seen.add(tweetId);
   return { type: 'tweet', tweetId, text, author, isMention };
-}
-
-function insertText(el, text) {
-  el.focus();
-  const selection = window.getSelection();
-  if (!selection) return;
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  range.collapse(false);
-  selection.removeAllRanges();
-  selection.addRange(range);
-  document.execCommand('insertText', false, text);
 }
 
 function clickReplyAndSend(tweetId, reply) {
@@ -43,7 +29,8 @@ function clickReplyAndSend(tweetId, reply) {
   setTimeout(() => {
     const composer = document.querySelector('div[data-testid="tweetTextarea_0"]');
     if (!composer) return;
-    insertText(composer, reply);
+    composer.focus();
+    document.execCommand('insertText', false, reply);
     setTimeout(() => {
       const postBtn = document.querySelector('button[data-testid="tweetButton"]');
       postBtn?.click();
@@ -67,7 +54,4 @@ chrome.runtime.onMessage.addListener((msg) => {
 });
 
 setInterval(scan, 2500);
-window.addEventListener('load', () => {
-  chrome.runtime.sendMessage({ type: 'heartbeat', source: 'content_loaded' });
-  setTimeout(scan, 1000);
-});
+window.addEventListener('load', () => setTimeout(scan, 1000));

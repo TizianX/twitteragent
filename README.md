@@ -12,27 +12,18 @@
 ./scripts/install-and-run.ps1
 ```
 
-This command installs dependencies (first run), builds the desktop app, and starts it.
-
-## Dev mode
-```bash
-npm run dev
-```
-
 ## Installer packages
 ```bash
 npm run package
 ```
 Generated installers appear in `release/`.
 
-## In-app setup checklist
-1. Save Gemini API key.
-2. Upload `voice_profile.md` and `voice_samples_raw.md`.
-3. Click **Launch Chrome with Extension** (it opens an isolated Chrome profile with extension preloaded).
-4. Log into X in that opened Chrome window.
+## User flow
+1. Launch app.
+2. Paste Gemini API key in AI Settings and click Save Key.
+3. Upload `voice_profile.md` and `voice_samples_raw.md` in Voice Manager.
+4. Click **Launch Chrome with Extension** and open X.
 5. Click **Start Agent**.
-6. Verify `extension: connected` in dashboard.
-7. Optional: use **Test Reply Sandbox** to confirm prompt/voice behavior before live posting.
 
 ## Build command
 ```bash

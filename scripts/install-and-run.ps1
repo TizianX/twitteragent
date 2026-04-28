@@ -16,3 +16,5 @@ npm run build
 
 Write-Host "Starting desktop app..."
 npm run start
+Write-Host "Starting desktop app..."
+npm run dev

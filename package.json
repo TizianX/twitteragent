@@ -79,9 +79,6 @@
     "nsis": {
       "oneClick": true,
       "allowToChangeInstallationDirectory": false
-    },
-    "asarUnpack": [
-      "extension/**"
-    ]
+    }
   }
 }

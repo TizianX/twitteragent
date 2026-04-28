@@ -33,7 +33,6 @@ type Snapshot = {
   voiceStrength: number;
   lastTweets: string[];
   logs: string[];
-  extensionConnected: boolean;
   automation: Automation;
   ai: Omit<Ai, 'apiKey'>;
 };
@@ -121,7 +120,6 @@ export class AgentRuntime {
       voiceStrength: this.voiceStrength,
       lastTweets: [...this.lastTweets].slice(-8),
       logs: [...this.logs].slice(-300),
-      extensionConnected: this.sockets.size > 0,
       automation: this.automation,
       ai: {
         model: this.ai.model,
@@ -152,7 +150,7 @@ export class AgentRuntime {
   updateAi(partial: Partial<Ai>) {
     this.ai = { ...this.ai, ...partial };
     this.persist();
-    this.log('ai settings updated');
+    this.log(`ai settings updated`);
   }
 
   reloadVoice() {
@@ -176,11 +174,9 @@ export class AgentRuntime {
     this.server.on('connection', (socket: WebSocket) => {
       this.sockets.add(socket);
       this.log('extension connected');
-      this.emit();
       socket.on('close', () => {
         this.sockets.delete(socket);
         this.log('extension disconnected');
-        this.emit();
       });
       socket.on('message', async (raw: Buffer) => {
         try {
@@ -192,7 +188,6 @@ export class AgentRuntime {
       });
     });
     this.log('agent started; websocket on ws://127.0.0.1:3031');
-    this.log('if extension is disconnected: click Launch Chrome with Extension');
   }
 
   async stop() {
@@ -206,12 +201,6 @@ export class AgentRuntime {
     this.log('agent stopped');
   }
 
-  async testReply(tweet: string) {
-    const response = await this.generateReply(tweet, 'test_user');
-    this.log(`test reply: ${response}`);
-    return response;
-  }
-
   private canReplyNow() {
     const now = Date.now();
     this.recentReplyTimes = this.recentReplyTimes.filter((t) => now - t < 60 * 60 * 1000);
@@ -220,12 +209,6 @@ export class AgentRuntime {
 
   private async handleMessage(socket: WebSocket, data: any) {
     if (this.status !== 'running') return;
-
-    if (data.type === 'heartbeat') {
-      socket.send(JSON.stringify({ type: 'heartbeat_ack', now: Date.now() }));
-      return;
-    }
-
     if (data.type === 'tweet') {
       const tweetId = String(data.tweetId);
       const text = String(data.text || '');
