@@ -12,5 +12,8 @@ if [ ! -d node_modules ]; then
   npm install
 fi
 
+echo "Building desktop app..."
+npm run build
+
 echo "Starting desktop app..."
-npm run dev
+npm run start

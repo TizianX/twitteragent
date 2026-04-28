@@ -11,5 +11,10 @@ if (-not (Test-Path "node_modules")) {
   npm install
 }
 
+Write-Host "Building desktop app..."
+npm run build
+
+Write-Host "Starting desktop app..."
+npm run start
 Write-Host "Starting desktop app..."
 npm run dev
